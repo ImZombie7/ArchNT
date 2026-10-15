@@ -1,0 +1,15 @@
+cmake_minimum_required(VERSION 3.21)
+project(ArchNT VERSION 0.1.0 LANGUAGES C)
+
+if(NOT WIN32)
+    message(FATAL_ERROR "ArchNT currently targets native Windows NT.")
+endif()
+
+add_executable(archnt src/main.c)
+target_compile_features(archnt PRIVATE c_std_11)
+target_compile_definitions(archnt PRIVATE UNICODE _UNICODE WIN32_LEAN_AND_MEAN)
+if(MSVC)
+    target_compile_options(archnt PRIVATE /W4 /WX)
+else()
+    target_compile_options(archnt PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
