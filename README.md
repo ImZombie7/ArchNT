@@ -1,38 +1,45 @@
 # ArchNT
 
-**A DIY Linux-inspired terminal workflow on the native Windows NT kernel.**
+**Arch Linux userspace on the Windows NT kernel. No WSL.**
 
-> Status: early prototype. Not a Linux distribution, Linux compatibility layer, or replacement kernel.
+ArchNT is an experimental Linux-compatibility project. The goal is to run real Linux/Arch userspace directly on Windows NT, without WSL, a Linux virtual machine, or a replacement kernel.
 
-ArchNT aims to bring a tidy, keyboard-first, package-manager-inspired developer workflow to Windows without requiring WSL, a virtual machine, or Docker.
+> Status: concept / early scaffolding. This does not run Linux binaries yet.
 
-## Current prototype
+## The actual goal
 
-- Native C executable for Windows
-- Small interactive prompt
-- Built-ins: `help`, `clear`/`cls`, `pwd`, `cd`, `exit`
-- Other commands delegated to `cmd.exe`
+ArchNT is not a themed Windows shell. It must provide enough Linux execution compatibility for Linux programs and, eventually, Arch Linux userspace and package workflows to run while Windows NT remains the host kernel.
 
-## Build
+High-level components:
 
-Requirements: Windows, CMake 3.21+, and a C compiler such as MSVC or MinGW-w64.
+1. **Linux executable support** — inspect and load ELF binaries, including architecture and ABI validation.
+2. **Linux ABI compatibility** — implement Linux system-call semantics using supported Windows NT / Win32 primitives where possible.
+3. **Process and thread model** — Linux process creation, exit status, signals, waits, file descriptors, and per-process state.
+4. **Linux filesystem view** — Linux paths, permissions, metadata, symlinks, proc-like interfaces, and compatible file operations.
+5. **Runtime and libraries** — load Linux ELF interpreters and shared libraries; support required memory mapping and TLS behavior.
+6. **Arch userspace** — after the runtime is viable, investigate running Arch binaries and integrating package management.
 
-```powershell
-cmake -S . -B build
-cmake --build build --config Release
-```
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the staged plan and constraints.
 
-Run `build\Release\archnt.exe` with Visual Studio generators, or `build\archnt.exe` with a single-configuration generator such as MinGW Makefiles.
+## Non-goals
 
-## Scope and safety
+- Replacing or patching the Windows NT kernel.
+- Pretending that a Windows shell is a Linux environment.
+- Depending on WSL, a Linux VM, or Docker to provide the Linux runtime.
+- Claiming compatibility before real Linux binaries pass tests.
 
-ArchNT currently wraps Windows command execution; it does **not** implement Linux syscalls, an ELF loader, or Linux package compatibility. Do not enter untrusted commands: delegated commands run with the same permissions as the current user.
+## Current repository state
 
-## Roadmap
+The current C/CMake files are throwaway scaffolding, not the compatibility layer. The existing archnt.exe prototype is a Windows command wrapper and cannot execute Linux ELF programs. Do not mistake it for a working Linux runtime.
 
-- [x] Establish native Windows C/CMake project
-- [x] Minimal interactive prompt and built-ins
-- [ ] Add command parsing and reliable argument handling
-- [ ] Define a configuration and aliases format
-- [ ] Add a package/workflow manager (design before implementation)
-- [ ] Add tests and CI for supported Windows toolchains
+## Development principles
+
+- Start with a narrow, testable Linux ABI subset rather than claiming full compatibility.
+- Document every syscall's supported behavior and known differences.
+- Keep Windows-specific implementation details behind internal interfaces.
+- Use reproducible tests and real Linux-built ELF fixtures.
+- Never claim Arch package compatibility until the loader, runtime, filesystem, and required syscalls work together.
+
+## Initial milestone
+
+The first meaningful milestone is a Linux ELF inspection tool and compatibility-layer skeleton, followed by a deliberately small executable test. A package manager comes much later; pacman cannot compensate for a missing Linux runtime.
